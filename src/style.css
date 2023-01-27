@@ -1,0 +1,66 @@
+* {
+    padding: 0;
+    margin: 0;
+    font-size: 30px;
+}
+
+body {
+    background: #343A40;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+#baza {
+    margin-top: 50px;
+}
+
+#row {
+    display: flex;
+    justify-content: center;
+}
+
+.col {
+    height: 120px;
+    width: 120px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.black {
+    background-color: #000;
+    color: #fff;
+}
+
+.white {
+    background-color: #e5e5e5;
+    color: #000;
+}
+
+.chest {
+    height: 70px;
+    width: 70px;
+    border-radius: 50%;
+    transition: .3s;
+}
+
+.chestRed {
+    background-color: #540B0E;
+}
+
+.chestGreen {
+    background-color: #073B4C;
+}
+
+.active {
+    height: 80px;
+    width: 80px;
+}
+
+.avaliable {
+    background-color: blue;
+}
