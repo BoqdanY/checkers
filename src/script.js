@@ -47,13 +47,19 @@ class Checker {
         this.color = color;
         this.available = [];
         this.body = document.createElement('div');
-        this.body.addEventListener('click', () => { // here must be something
-            this.addActiveStyle();
-            this.showAvailable();
-        });
         this.body.classList.add('chest');
         this.body.classList.add(color);
-        Checker.#checkers.push(this.body);
+        Checker.#checkers.push(this);
+    }
+    activate() {
+        this.body.onclick = () => {
+            this.addActiveStyle();
+            this.showAvailable();
+        };
+    }
+
+    disable() {
+        this.body.onclick = '';
     }
 
     showAvailable() {
@@ -70,11 +76,11 @@ class Checker {
         elem.append(this.body);
         this.body.classList.remove('active');
         [this.y, this.x] = elem.id.split(' ').map(x => Number(x));
-        Area.clearArea();
-        console.log(elem.id.split(' '));
         for (const elem of this.available) {
             elem.onclick = '';
         }
+        Area.clearArea();
+        Listener.nextMove();
     }
 
     getAvailable() {
@@ -92,7 +98,7 @@ class Checker {
 
     addActiveStyle() {
         for (const elem of Checker.#checkers) {
-            elem.classList.remove('active');
+            elem.body.classList.remove('active');
         }
         this.body.classList.add('active');
     }
@@ -113,7 +119,30 @@ class Checker {
         Checker.drawOnePlayer(0, 0, 'firstPlayer', 1);
         Checker.drawOnePlayer(0, 5, 'secondPlayer', 0);
     }
+
+    static defineMove(player) {
+        for (const elem of this.#checkers) {
+            if (elem.body.classList.contains(player)) {
+                elem.activate();
+            }
+            else {
+                elem.disable()
+            }
+        }
+    }
+}
+
+class Listener {
+    static #move = Math.round(Math.random());
+
+    static nextMove() {
+        console.log(this.#move); // console
+        const player = this.#move === 1 ? 'firstPlayer' : 'secondPlayer';
+        Checker.defineMove(player);
+        this.#move = this.#move === 1 ? 0 : 1;
+    }
 }
 
 new Area().draw();
 Checker.draw();
+Listener.nextMove();
