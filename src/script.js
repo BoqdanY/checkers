@@ -9,6 +9,14 @@ class Area {
             }
         }
     }
+
+    static clearEvent() {
+        for (const row of this.area) {
+            for (const col of row) {
+                col.onclick = '';
+            }
+        }
+    }
     constructor() {
         for (let i = 0; i < 8; i++) {
             const arr = [];
@@ -58,12 +66,13 @@ class Checker {
         };
     }
 
-    disable() {
+    deactivate() {
         this.body.onclick = '';
     }
 
     showAvailable() {
         Area.clearArea();
+        Area.clearEvent();
         this.available = this.getAvailable();
         for (const elem of this.available) {
             elem.classList.add('available');
@@ -76,9 +85,7 @@ class Checker {
         elem.append(this.body);
         this.body.classList.remove('active');
         [this.y, this.x] = elem.id.split(' ').map(x => Number(x));
-        for (const elem of this.available) {
-            elem.onclick = '';
-        }
+        Area.clearEvent();
         Area.clearArea();
         Listener.nextMove();
     }
@@ -126,7 +133,7 @@ class Checker {
                 elem.activate();
             }
             else {
-                elem.disable()
+                elem.deactivate()
             }
         }
     }
