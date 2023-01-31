@@ -18,6 +18,7 @@ class Area {
             }
         }
     }
+
     constructor() {
         for (let i = 0; i < 8; i++) {
             const arr = [];
@@ -35,6 +36,7 @@ class Area {
             Area.area.push(arr);
         }
     }
+
     draw() {
         const baza = document.getElementById('baza');
         for (const cols of Area.area) {
@@ -49,17 +51,19 @@ class Area {
 }
 
 class Checker {
-    static #checkers = [];
+    static checkers = [];
+
     constructor(x, y, color, enemy) {
         this.x = x;
         this.y = y;
         this.color = color;
         this.enemy = enemy;
         this.body = document.createElement('div');
-        this.body.classList.add('chest');
+        this.body.classList.add('checker');
         this.body.classList.add(color);
-        Checker.#checkers.push(this);
+        Checker.checkers.push(this);
     }
+
     activate() {
         this.body.onclick = () => {
             this.addActiveStyle();
@@ -94,12 +98,27 @@ class Checker {
         return obj;
     }
 
+    checkKing() {
+        if (this.color === 'firstPlayer') {
+            if (this.y === 7) {
+                this.body.remove();
+                new King(this.x, this.y, this.color);
+            }
+        } else {
+            if (this.y === 0) {
+                this.body.remove();
+                new King(this.x, this.y, this.color);
+            }
+        }
+    }
+
     move(elem) {
         elem.append(this.body);
         this.body.classList.remove('active');
         [this.y, this.x] = elem.id.split(' ').map(x => Number(x));
         Area.clearEvent();
         Area.clearArea();
+        this.checkKing();
         Listener.nextMove();
     }
 
@@ -111,6 +130,7 @@ class Checker {
         deleteElem.innerHTML = '';
         if (this.checkCheckersForBeat().size === 0) {
             this.body.classList.remove('active');
+            this.checkKing();
             Listener.nextMove();
         } else {
             this.addBeatStyle();
@@ -171,16 +191,20 @@ class Checker {
             elem.onclick = () => this.moveBeat(elem, deleteElem);
         }
     }
+
     addActiveStyle() {
-        for (const elem of Checker.#checkers) {
+        for (const elem of Checker.checkers) {
+            elem.body.classList.remove('active');
+        }
+        for (const elem of King.kings) {
             elem.body.classList.remove('active');
         }
         this.body.classList.add('active');
     }
 
-    check
     static drawOnePlayer(x, y, color, enemy, start) {
-        for (let i = 0; i < 12; i++) {
+        const checkersNumber = 3;
+        for (let i = 0; i < checkersNumber; i++) {
             const col = document.getElementById(`${y} ${x + start}`);
             const checker = new Checker(x + start, y, color, enemy);
             col.append(checker.body);
@@ -192,14 +216,109 @@ class Checker {
             }
         }
     }
+
     static draw() {
         Checker.drawOnePlayer(0, 0, 'firstPlayer', 'secondPlayer',1);
         Checker.drawOnePlayer(0, 5, 'secondPlayer', 'firstPlayer',0);
     }
 
     static defineMove(player) {
-        for (const elem of this.#checkers) {
+        for (const elem of this.checkers) {
             if (elem.body.classList.contains(player)) {
+                elem.activate();
+            }
+            else {
+                elem.deactivate()
+            }
+        }
+    }
+}
+
+class King {
+    static kings = [];
+
+    constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.body = document.createElement('div');
+        this.body.id = `${y} ${x}`;
+        this.body.classList.add('checker');
+        this.body.classList.add(`king${color}`);
+        King.kings.push(this);
+        this.drawKing();
+    }
+
+    drawKing() {
+        document.getElementById(`${this.y} ${this.x}`).append(this.body);
+    }
+
+    activate() {
+        this.body.onclick = () => {
+            this.addActiveStyle();
+            this.showAvailableMoves();
+        };
+    }
+
+    deactivate() {
+        this.body.onclick = '';
+    }
+
+    showAvailableMoves() {
+        Area.clearArea()
+        Area.clearEvent()
+        this.addAvailableStyle();
+    }
+
+    getAvailableMoves() {
+        const array = [];
+        this.validateMoves(1, 1, array);
+        this.validateMoves(-1, -1, array);
+        this.validateMoves(1, -1, array);
+        this.validateMoves(-1, 1, array);
+        return array;
+    }
+
+    validateMoves (y, x, array) {
+        for (let i = 1; i < 8; i++) {
+            const elem = document.getElementById(`${this.y + i * y} ${this.x + i * x}`);
+            if (elem) {
+                if (elem.innerHTML === '') {
+                    array.push(elem);
+                } else break;
+            } else break;
+        }
+    }
+
+    addAvailableStyle() {
+        for (const elem of this.getAvailableMoves()) {
+            elem.classList.add('available');
+            elem.onclick = () => this.move(elem);
+        }
+    }
+
+    move(elem) {
+        elem.append(this.body);
+        this.body.classList.remove('active');
+        [this.y, this.x] = elem.id.split(' ').map(x => Number(x));
+        Area.clearEvent();
+        Area.clearArea();
+        Listener.nextMove();
+    }
+
+    addActiveStyle() {
+        for (const elem of King.kings) {
+            elem.body.classList.remove('active');
+        }
+        for (const elem of Checker.checkers) {
+            elem.body.classList.remove('active');
+        }
+        this.body.classList.add('active');
+    }
+
+    static defineMove(player) {
+        for (const elem of this.kings) {
+            if (elem.body.classList.contains(`king${player}`)) {
                 elem.activate();
             }
             else {
@@ -215,6 +334,7 @@ class Listener {
     static nextMove() {
         const player = this.#move === 1 ? 'firstPlayer' : 'secondPlayer';
         Checker.defineMove(player);
+        King.defineMove(player);
         this.#move = this.#move === 1 ? 0 : 1;
     }
 }
