@@ -240,7 +240,6 @@ class King {
     constructor(x, y, color, enemy) {
         this.x = x;
         this.y = y;
-        this.color = color; // remove
         this.enemy = enemy;
         this.body = document.createElement('div');
         this.body.id = `${y} ${x}`;
