@@ -128,6 +128,7 @@ class Checker {
         [this.y, this.x] = elem.id.split(' ').map(x => Number(x));
         Area.clearEvent();
         Area.clearArea();
+        Panel.changeScore(this.color);
         deleteElem.innerHTML = '';
         if (this.checkCheckersForBeat().size === 0) {
             this.body.classList.remove('active');
@@ -242,6 +243,7 @@ class King {
         this.x = x;
         this.y = y;
         this.enemy = enemy;
+        this.color = color;
         this.body = document.createElement('div');
         this.body.id = `${y} ${x}`;
         this.body.classList.add('checker');
@@ -348,6 +350,7 @@ class King {
         [this.y, this.x] = elem.id.split(' ').map(x => Number(x));
         Area.clearEvent();
         Area.clearArea();
+        Panel.changeScore(this.color);
         deleteElem.innerHTML = '';
         console.log(this.checkMovesForBeat());
         if (this.checkMovesForBeat().size === 0) {
@@ -397,13 +400,27 @@ class King {
 }
 
 class Listener {
-    static #move = Math.round(Math.random());
+    static move = Math.round(Math.random());
 
     static nextMove() {
-        const player = this.#move === 1 ? 'firstPlayer' : 'secondPlayer';
+        const player = this.move === 1 ? 'firstPlayer' : 'secondPlayer';
+        this.changeColor(player);
         Checker.defineMove(player);
         King.defineMove(player);
-        this.#move = this.#move === 1 ? 0 : 1;
+        this.move = this.move === 1 ? 0 : 1;
+    }
+
+    static changeColor(player) {
+        const color = document.getElementById('color');
+        color.className = '';
+        color.classList.add(player);
+    }
+}
+
+class Panel {
+    static changeScore(player) {
+        const elem = document.getElementById(`${player}Score`);
+        elem.innerHTML = +elem.innerHTML + 1;
     }
 }
 
