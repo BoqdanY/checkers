@@ -102,12 +102,12 @@ class Checker {
         if (this.color === 'firstPlayer') {
             if (this.y === 7) {
                 this.body.remove();
-                new King(this.x, this.y, this.color);
+                new King(this.x, this.y, this.color, this.enemy);
             }
         } else {
             if (this.y === 0) {
                 this.body.remove();
-                new King(this.x, this.y, this.color);
+                new King(this.x, this.y, this.color, this.enemy);
             }
         }
     }
@@ -203,7 +203,7 @@ class Checker {
     }
 
     static drawOnePlayer(x, y, color, enemy, start) {
-        const checkersNumber = 3;
+        const checkersNumber = 12;
         for (let i = 0; i < checkersNumber; i++) {
             const col = document.getElementById(`${y} ${x + start}`);
             const checker = new Checker(x + start, y, color, enemy);
@@ -237,10 +237,11 @@ class Checker {
 class King {
     static kings = [];
 
-    constructor(x, y, color) {
+    constructor(x, y, color, enemy) {
         this.x = x;
         this.y = y;
-        this.color = color;
+        this.color = color; // remove
+        this.enemy = enemy;
         this.body = document.createElement('div');
         this.body.id = `${y} ${x}`;
         this.body.classList.add('checker');
@@ -268,18 +269,49 @@ class King {
         Area.clearArea()
         Area.clearEvent()
         this.addAvailableStyle();
+        this.addBeatStyle();
+    }
+
+    checkMovesForBeat() {
+        const obj = new Map();
+        for (const elem of this.getMovesForBeat()) {
+            const array = [];
+            const [elemY, elemX] = elem.id.split(' ');
+            let i = 1;
+            while(true) {
+                const y = this.y - elemY >= 1 ? +elemY - i : +elemY + i;
+                const x = this.x - elemX >= 1 ? +elemX - i : +elemX + i;
+                const cell = document.getElementById(`${y} ${x}`);
+                if (cell === null) break;
+                if (!cell.innerHTML) {
+                    array.push(cell);
+                }
+                i++;
+            }
+            if (array.length !== 0) obj.set(elem, array);
+        }
+        return obj;
     }
 
     getAvailableMoves() {
         const array = [];
-        this.validateMoves(1, 1, array);
-        this.validateMoves(-1, -1, array);
-        this.validateMoves(1, -1, array);
-        this.validateMoves(-1, 1, array);
+        this.defineMoves(1, 1, array);
+        this.defineMoves(-1, -1, array);
+        this.defineMoves(1, -1, array);
+        this.defineMoves(-1, 1, array);
         return array;
     }
 
-    validateMoves (y, x, array) {
+    getMovesForBeat() {
+        const array = [];
+        this.defineMovesForBeat(1, 1, array);
+        this.defineMovesForBeat(-1, -1, array);
+        this.defineMovesForBeat(1, -1, array);
+        this.defineMovesForBeat(-1, 1, array);
+        return array;
+    }
+
+    defineMoves (y, x, array) {
         for (let i = 1; i < 8; i++) {
             const elem = document.getElementById(`${this.y + i * y} ${this.x + i * x}`);
             if (elem) {
@@ -290,10 +322,15 @@ class King {
         }
     }
 
-    addAvailableStyle() {
-        for (const elem of this.getAvailableMoves()) {
-            elem.classList.add('available');
-            elem.onclick = () => this.move(elem);
+    defineMovesForBeat(y, x, array) {
+        for (let i = 1; i < 8; i++) {
+            const elem = document.getElementById(`${this.y + i * y} ${this.x + i * x}`);
+            if (elem) {
+                if (elem.innerHTML.includes(this.enemy)) {
+                    array.push(elem);
+                    break;
+                }
+            }
         }
     }
 
@@ -306,6 +343,28 @@ class King {
         Listener.nextMove();
     }
 
+    moveBeat(elem, deleteElem) {
+        elem.append(this.body);
+        [this.y, this.x] = elem.id.split(' ').map(x => Number(x));
+        Area.clearEvent();
+        Area.clearArea();
+        deleteElem.innerHTML = '';
+        console.log(this.checkMovesForBeat());
+        if (this.checkMovesForBeat().size === 0) {
+            this.body.classList.remove('active');
+            Listener.nextMove();
+        } else {
+            this.addBeatStyle();
+        }
+    }
+
+    addAvailableStyle() {
+        for (const elem of this.getAvailableMoves()) {
+            elem.classList.add('available');
+            elem.onclick = () => this.move(elem);
+        }
+    }
+
     addActiveStyle() {
         for (const elem of King.kings) {
             elem.body.classList.remove('active');
@@ -314,6 +373,15 @@ class King {
             elem.body.classList.remove('active');
         }
         this.body.classList.add('active');
+    }
+
+    addBeatStyle() {
+        for (const [deleteElem, array] of this.checkMovesForBeat().entries()) {
+            for (const elem of array) {
+                elem.classList.add('beat');
+                elem.onclick = () => this.moveBeat(elem, deleteElem);
+            }
+        }
     }
 
     static defineMove(player) {
