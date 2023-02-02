@@ -53,6 +53,7 @@ class Area {
 
 class Checker {
     static checkers = [];
+    static checkersNumber = 12;
 
     constructor(x, y, color, enemy) {
         this.x = x;
@@ -92,7 +93,6 @@ class Checker {
             const cell = document.getElementById(`${y} ${x}`);
             if (cell === null) continue;
             if (!cell.innerHTML) {
-                // array.push(cell); old version
                 obj.set(elem, cell);
             }
         }
@@ -205,8 +205,8 @@ class Checker {
     }
 
     static drawOnePlayer(x, y, color, enemy, start) {
-        const checkersNumber = 12;
-        for (let i = 0; i < checkersNumber; i++) {
+
+        for (let i = 0; i < Checker.checkersNumber; i++) {
             const col = document.getElementById(`${y} ${x + start}`);
             const checker = new Checker(x + start, y, color, enemy);
             col.append(checker.body);
@@ -421,6 +421,14 @@ class Panel {
     static changeScore(player) {
         const elem = document.getElementById(`${player}Score`);
         elem.innerHTML = +elem.innerHTML + 1;
+        this.checkWin(elem, player);
+    }
+
+    static checkWin(elem, player) {
+        if (+elem.innerHTML === Checker.checkersNumber) {
+            document.getElementById('win').innerHTML = `${player} won!`;
+            setTimeout(() => Listener.changeColor(player));
+        }
     }
 }
 
