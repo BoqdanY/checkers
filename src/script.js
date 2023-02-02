@@ -20,7 +20,7 @@ class Area {
         }
     }
 
-    constructor() {
+    static createArea() {
         for (let i = 0; i < 8; i++) {
             const arr = [];
             for (let j = 0; j < 8; j++) {
@@ -38,12 +38,13 @@ class Area {
         }
     }
 
-    draw() {
+    static draw() {
+        this.createArea();
         const baza = document.getElementById('baza');
         for (const cols of Area.area) {
             const row = document.createElement('div');
             row.id = 'row';
-            for(const col of cols) {
+            for (const col of cols) {
                 row.append(col);
             }
             baza.append(row);
@@ -205,7 +206,6 @@ class Checker {
     }
 
     static drawOnePlayer(x, y, color, enemy, start) {
-
         for (let i = 0; i < Checker.checkersNumber; i++) {
             const col = document.getElementById(`${y} ${x + start}`);
             const checker = new Checker(x + start, y, color, enemy);
@@ -432,6 +432,6 @@ class Panel {
     }
 }
 
-new Area().draw();
+Area.draw();
 Checker.draw();
 Listener.nextMove();
